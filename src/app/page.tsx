@@ -180,7 +180,7 @@ export default function Home() {
             )}
           </p>
           <div className="text-sm text-blue-200">
-            Auto-updates every 5 minutes
+            Auto-updates every 30 minutes
           </div>
         </div>
       </div>
