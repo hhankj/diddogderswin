@@ -3,115 +3,64 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-// Type definitions for the ESPN API response
-interface Team {
-  id: string;
-  abbreviation: string;
-  displayName: string;
+// Type definitions for the game data
+interface GameData {
+  didWin?: boolean;
+  gameInfo?: string;
+  lastUpdated: string;
+  error?: string;
 }
 
-interface Competitor {
-  id: string;
-  team: Team;
-  homeAway: 'home' | 'away';
-  winner: boolean;
-  score: string;
-}
-
-interface Competition {
-  id: string;
-  competitors: Competitor[];
-  venue: {
-    fullName: string;
-    address: {
-      city: string;
-      state: string;
-    };
-  };
-  status: {
-    type: {
-      completed: boolean;
-    };
-  };
-}
-
-interface Event {
-  id: string;
-  date: string;
-  competitions: Competition[];
-}
-
-interface ESPNResponse {
-  events: Event[];
-}
-
-const fetchDodgersRecentGames = async (): Promise<{ didWin: boolean; gameInfo: string } | null> => {
+const fetchGameData = async (): Promise<GameData | null> => {
   try {
-    // Fetch recent Dodgers games from ESPN API
-    const response = await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/19/schedule');
+    const response = await fetch('/game-data.json', {
+      cache: 'no-store' // Prevent caching to always get fresh data
+    });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch games');
+      throw new Error('Failed to fetch game data');
     }
     
-    const data: ESPNResponse = await response.json();
-    
-    // Find the most recent completed home game
-    const recentHomeGames = data.events
-      .filter(event => {
-        const competition = event.competitions[0];
-        // Check if game is completed and at Dodger Stadium
-        return competition.status.type.completed && 
-               competition.venue.fullName === 'Dodger Stadium';
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
-    if (recentHomeGames.length === 0) {
-      return null;
-    }
-    
-    const mostRecentGame = recentHomeGames[0];
-    const competition = mostRecentGame.competitions[0];
-    
-    // Find the Dodgers in the competitors array
-    const dodgersCompetitor = competition.competitors.find(
-      competitor => competitor.team.id === '19'
-    );
-    
-    if (!dodgersCompetitor) {
-      return null;
-    }
-    
-    // Get opponent info
-    const opponent = competition.competitors.find(
-      competitor => competitor.team.id !== '19'
-    );
-    
-    const gameDate = new Date(mostRecentGame.date).toLocaleDateString();
-    const gameInfo = `on ${gameDate} against the ${opponent?.team.displayName || 'opponent'}`;
-    
-    return {
-      didWin: dodgersCompetitor.winner,
-      gameInfo
-    };
+    const data: GameData = await response.json();
+    return data;
     
   } catch (error) {
-    console.error('Error fetching Dodgers game data:', error);
+    console.error('Error fetching game data:', error);
     return null;
   }
 };
 
+const getTimeAgo = (timestamp: string): string => {
+  const now = new Date();
+  const updated = new Date(timestamp);
+  const diffInSeconds = Math.floor((now.getTime() - updated.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} seconds ago`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days !== 1 ? 's' : ''} ago`;
+  }
+};
+
 export default function Home() {
-  const [gameResult, setGameResult] = useState<{ didWin: boolean; gameInfo: string } | null>(null);
+  const [gameData, setGameData] = useState<GameData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeAgo, setTimeAgo] = useState<string>('');
 
   useEffect(() => {
-    const loadGameResult = async () => {
+    const loadGameData = async () => {
       try {
         setLoading(true);
-        const result = await fetchDodgersRecentGames();
-        setGameResult(result);
+        const data = await fetchGameData();
+        setGameData(data);
         setError(null);
       } catch (err) {
         setError('Failed to load game data');
@@ -121,8 +70,22 @@ export default function Home() {
       }
     };
 
-    loadGameResult();
+    loadGameData();
   }, []);
+
+  // Update time ago every second
+  useEffect(() => {
+    if (!gameData?.lastUpdated) return;
+
+    const updateTimeAgo = () => {
+      setTimeAgo(getTimeAgo(gameData.lastUpdated));
+    };
+
+    updateTimeAgo(); // Initial update
+    const interval = setInterval(updateTimeAgo, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameData?.lastUpdated]);
 
   const displayResult = () => {
     if (loading) {
@@ -133,10 +96,26 @@ export default function Home() {
       );
     }
     
-    if (error || !gameResult) {
+    if (error || !gameData) {
       return (
         <div className="text-4xl md:text-5xl font-bold text-red-400 mb-8">
           ERROR
+        </div>
+      );
+    }
+
+    if (gameData.error) {
+      return (
+        <div className="text-4xl md:text-5xl font-bold text-red-400 mb-8">
+          API ERROR
+        </div>
+      );
+    }
+
+    if (!gameData.didWin === undefined || !gameData.gameInfo) {
+      return (
+        <div className="text-4xl md:text-5xl font-bold text-gray-400 mb-8">
+          NO DATA
         </div>
       );
     }
@@ -144,13 +123,13 @@ export default function Home() {
     return (
       <>
         <div className={`text-8xl md:text-9xl font-bold mb-8 ${
-          gameResult.didWin ? 'text-green-400' : 'text-red-400'
+          gameData.didWin ? 'text-green-400' : 'text-red-400'
         }`}>
-          {gameResult.didWin ? 'YES' : 'NO'}
+          {gameData.didWin ? 'YES' : 'NO'}
         </div>
         
         <div className="text-xl md:text-2xl mb-16">
-          <p>{gameResult.gameInfo}</p>
+          <p>{gameData.gameInfo}</p>
         </div>
       </>
     );
@@ -178,13 +157,10 @@ export default function Home() {
         {displayResult()}
         
         <div className="text-lg space-y-2">
-          <p>Last refresh: {new Date().toLocaleString()}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded transition-colors"
-          >
-            Refresh
-          </button>
+          <p>Last refreshed: {timeAgo}</p>
+          <div className="text-sm text-blue-200">
+            Auto-updates every minute
+          </div>
         </div>
       </div>
     </div>
