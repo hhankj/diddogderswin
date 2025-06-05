@@ -2,8 +2,10 @@ name: Update Dodgers Game Data
 
 on:
   schedule:
-    - cron: '* * * * *'  # Runs every minute
+    - cron: '*/5 * * * *'  # Runs every 5 minutes (minimum allowed by GitHub)
   workflow_dispatch:  # Allows manual triggering
+  push:
+    branches: [ main ]  # Runs on every push to main branch
 
 jobs:
   update-data:
@@ -19,8 +21,9 @@ jobs:
           node-version: '18'
           
       - name: Install dependencies
-        run: npm install node-fetch
-        
+        run: |
+          npm install node-fetch
+          
       - name: Update game data
         run: node scripts/update-data.js
         
