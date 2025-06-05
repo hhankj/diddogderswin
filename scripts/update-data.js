@@ -50,10 +50,12 @@ const fetchDodgersRecentGames = async () => {
       competitor => competitor.team.id !== '19'
     );
     
+    // Fix timezone issue: Always interpret the date in Pacific Time
     const gameDate = new Date(mostRecentGame.date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'America/Los_Angeles' // Force Pacific Time for consistency
     });
     const gameInfo = `on ${gameDate} against the ${opponent?.team.displayName || 'opponent'}`;
     
