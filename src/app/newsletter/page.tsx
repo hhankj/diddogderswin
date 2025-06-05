@@ -2,33 +2,81 @@ import Link from 'next/link';
 
 export default function Newsletter() {
   return (
-    <div className="min-h-screen bg-blue-600 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white relative overflow-hidden">
+      {/* Background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}></div>
+      </div>
+      
       {/* Navigation */}
-      <nav className="flex justify-between items-center px-8 py-4">
-        <Link href="/" className="text-white hover:text-blue-200 transition-colors">
+      <nav className="relative z-10 flex justify-between items-center px-8 py-6 backdrop-blur-sm bg-white/5 border-b border-white/10">
+        <Link href="/" className="text-white hover:text-blue-300 transition-colors duration-300 font-medium tracking-wide">
           Home
         </Link>
-        <button className="text-white hover:text-blue-200 transition-colors">
+        <button className="text-white hover:text-blue-300 transition-colors duration-300 font-medium tracking-wide">
           Newsletter
         </button>
       </nav>
 
       {/* Newsletter Content */}
-      <div className="flex flex-col items-center justify-center text-center px-8 py-32">
-        <h1 className="text-3xl md:text-4xl font-bold mb-12 leading-relaxed max-w-2xl">
-          Want the latest updates Dodgers Home wins<br />
-          for your next $6 Panda Express?
-        </h1>
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-8 py-16 min-h-[calc(100vh-120px)]">
+        <div className="max-w-4xl mx-auto space-y-12">
+          {/* Header */}
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-wide">
+              Never Miss Your <br /><span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">$6 Panda Express</span> Deal
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-orange-400 to-red-500 mx-auto rounded-full"></div>
+            <p className="text-xl md:text-2xl text-slate-300 font-light tracking-wide max-w-3xl mx-auto">
+              Get instant alerts when the Dodgers win at home in LA<br />
+              <span className="text-orange-400 font-medium">Save $6 on your Panda Express order!</span>
+            </p>
+          </div>
+          
+          {/* Deal Explanation */}
+          <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 backdrop-blur-sm rounded-2xl p-6 border border-orange-400/20 max-w-3xl mx-auto">
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="text-4xl">🐼</div>
+              <div className="text-2xl font-bold text-orange-400">THE DEAL</div>
+              <div className="text-4xl">⚾</div>
+            </div>
+            <p className="text-lg text-slate-200">
+              When the <span className="text-blue-400 font-semibold">Dodgers win at home</span>, 
+              get your Panda Express for <span className="text-orange-400 font-bold text-xl">$6</span>
+            </p>
+            <p className="text-sm text-slate-400 mt-2">Valid at participating LA locations</p>
+          </div>
+          
+          {/* Subscription Form */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 max-w-2xl mx-auto">
+            <div className="space-y-6">
+              <div className="text-lg font-semibold text-orange-400 mb-4">
+                🚨 Get notified instantly!
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 w-full sm:flex-1 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm transition-all duration-300"
+                />
+                <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap transform hover:scale-105 shadow-lg hover:shadow-orange-500/25">
+                  Get Alerts
+                </button>
+              </div>
+              
+              <div className="text-sm text-slate-400 space-y-2">
+                <p>🏠 Only when Dodgers win at home</p>
+                <p>⚡ Instant notifications via email</p>
+                <p>📱 Unsubscribe anytime</p>
+              </div>
+            </div>
+          </div>
+          
         
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="px-6 py-3 rounded-lg text-gray-800 placeholder-gray-500 w-full sm:w-80 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
-          <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap">
-            Subscribe
-          </button>
         </div>
       </div>
     </div>
