@@ -72,7 +72,7 @@ export default function Home() {
 
     loadGameData();
   }, []);
-
+ 
   // Update time ago every second
   useEffect(() => {
     if (!gameData?.lastUpdated) return;
