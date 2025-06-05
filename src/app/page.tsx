@@ -49,6 +49,20 @@ const getTimeAgo = (timestamp: string): string => {
   }
 };
 
+const formatPSTTime = (timestamp: string): string => {
+  const date = new Date(timestamp);
+  const pstTime = date.toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    month: 'short',
+    day: 'numeric'
+  });
+  return `${pstTime} PST`;
+};
+
 export default function Home() {
   const [gameData, setGameData] = useState<GameData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,7 +171,14 @@ export default function Home() {
         {displayResult()}
         
         <div className="text-lg space-y-2">
-          <p>Last refreshed: {timeAgo}</p>
+          <p>
+            Last refreshed: {timeAgo}
+            {gameData?.lastUpdated && (
+              <span className="text-blue-200 block text-base mt-1">
+                ({formatPSTTime(gameData.lastUpdated)})
+              </span>
+            )}
+          </p>
           <div className="text-sm text-blue-200">
             Auto-updates every minute
           </div>
