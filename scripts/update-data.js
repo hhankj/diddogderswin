@@ -50,7 +50,11 @@ const fetchDodgersRecentGames = async () => {
       competitor => competitor.team.id !== '19'
     );
     
-    const gameDate = new Date(mostRecentGame.date).toLocaleDateString();
+    const gameDate = new Date(mostRecentGame.date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
     const gameInfo = `on ${gameDate} against the ${opponent?.team.displayName || 'opponent'}`;
     
     return {

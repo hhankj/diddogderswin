@@ -126,7 +126,7 @@ export default function Home() {
       );
     }
 
-    if (!gameData.didWin === undefined || !gameData.gameInfo) {
+    if (gameData.didWin === undefined || !gameData.gameInfo) {
       return (
         <div className="text-4xl md:text-5xl font-bold text-gray-400 mb-8">
           NO DATA
