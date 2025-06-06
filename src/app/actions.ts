@@ -1,6 +1,6 @@
 'use server';
 
-import { addSubscriber, getActiveSubscribers } from '@/lib/subscribers-edge';
+import { addSubscriber, getActiveSubscribers } from '@/lib/database';
 import { sendDodgersWinEmailToAll } from '@/lib/email';
 
 // Server action to handle newsletter subscription

@@ -1,14 +1,12 @@
-name: Update Dodgers Game Data
+name: Check Dodgers Games & Send Emails
 
 on:
   schedule:
     - cron: '*/5 * * * *'  # Runs every 5 minutes (minimum allowed by GitHub)
   workflow_dispatch:  # Allows manual triggering
-  push:
-    branches: [ main ]  # Runs on every push to main branch
 
 jobs:
-  update-data:
+  check-games:
     runs-on: ubuntu-latest
     
     steps:
@@ -22,15 +20,11 @@ jobs:
           
       - name: Install dependencies
         run: |
-          npm install node-fetch
+          npm install @supabase/supabase-js node-fetch
           
-      - name: Update game data
-        run: node scripts/update-data.js
-        
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add public/game-data.json
-          git diff --staged --quiet || git commit -m "Update Dodgers game data - $(date)"
-          git push 
+      - name: Check for new Dodgers wins
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/check-games-github.js 

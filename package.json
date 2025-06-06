@@ -7,12 +7,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "node scripts/migrate-to-supabase.js"
   },
   "dependencies": {
     "@react-email/components": "^0.0.41",
+    "@supabase/supabase-js": "^2.50.0",
     "@vercel/edge-config": "^1.4.0",
     "@vercel/kv": "^3.0.0",
+    "@vercel/postgres": "^0.10.0",
     "autoprefixer": "^10.4.21",
     "next": "^14.2.29",
     "node-fetch": "^3.3.2",

@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import DodgersWinEmail from '@/emails/DodgersWinEmail';
+import { logEmailSent } from '@/lib/database';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -29,10 +30,25 @@ export async function sendDodgersWinEmail(
 
 export async function sendDodgersWinEmailToAll(
   subscribers: string[],
-  gameInfo: string
+  gameInfo: string,
+  gameId?: string
 ) {
+  const emailGameId = gameId || `LAD-${new Date().getFullYear()}-${Date.now()}`;
+  
   const results = await Promise.allSettled(
-    subscribers.map(email => sendDodgersWinEmail(email, gameInfo))
+    subscribers.map(async (email) => {
+      const result = await sendDodgersWinEmail(email, gameInfo);
+      
+      // Log the email attempt to Supabase
+      await logEmailSent(
+        emailGameId,
+        email,
+        result.success ? 'sent' : 'failed',
+        result.success ? undefined : String(result.error)
+      );
+      
+      return result;
+    })
   );
 
   const successful = results.filter(result => 

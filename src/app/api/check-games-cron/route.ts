@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendWinEmails } from '@/app/actions';
-import fs from 'fs';
-import path from 'path';
+import { getLatestGameData, upsertGameData } from '@/lib/database';
 
 // This runs every 30 minutes via Vercel cron
 export async function GET(request: NextRequest) {
@@ -24,25 +23,29 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if it's a new home win
-    const gameDataPath = path.join(process.cwd(), 'public', 'game-data.json');
-    const currentData = JSON.parse(fs.readFileSync(gameDataPath, 'utf-8'));
+    const currentData = await getLatestGameData();
     
     // If this is a new win (different from last recorded win)
-    if (gameData.didWin && gameData.isHome && gameData.gameId !== currentData.lastGameId) {
+    if (gameData.didWin && gameData.isHome && gameData.gameId !== currentData?.game_id) {
       console.log('🎉 NEW DODGERS HOME WIN DETECTED!');
       console.log(`🆚 Game: ${gameData.gameInfo}`);
       
       // Update game data to prevent duplicate processing
-      const newGameData = {
-        didWin: true,
-        gameInfo: gameData.gameInfo,
-        lastUpdated: new Date().toISOString(),
-        lastGameId: gameData.gameId,
-        lastHomeWin: new Date().toISOString(),
-        emailSent: false
-      };
+      const newGameData = await upsertGameData({
+        did_win: true,
+        game_info: gameData.gameInfo,
+        game_id: gameData.gameId,
+        last_updated: new Date().toISOString(),
+        last_home_win: new Date().toISOString(),
+        email_sent: false,
+        emails_sent: 0
+      });
       
-      fs.writeFileSync(gameDataPath, JSON.stringify(newGameData, null, 2));
+      if (!newGameData) {
+        console.error('❌ Failed to save game data');
+        return NextResponse.json({ error: 'Failed to save game data' }, { status: 500 });
+      }
+      
       console.log('💾 Game data saved, preventing duplicate processing');
       
       // Send emails
@@ -50,10 +53,12 @@ export async function GET(request: NextRequest) {
         const result = await sendWinEmails(gameData.gameInfo);
         
         if (result.success) {
-          newGameData.emailSent = true;
-          // @ts-expect-error - adding emailsSent property dynamically
-          newGameData.emailsSent = result.count;
-          fs.writeFileSync(gameDataPath, JSON.stringify(newGameData, null, 2));
+          // Update the email sent status
+          await upsertGameData({
+            ...newGameData,
+            email_sent: true,
+            emails_sent: result.count || 0
+          });
           
           console.log('✅ SUCCESS: Sent emails to', result.count, 'subscribers');
           

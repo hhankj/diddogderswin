@@ -13,7 +13,7 @@ interface GameData {
 
 const fetchGameData = async (): Promise<GameData | null> => {
   try {
-    const response = await fetch('/game-data.json', {
+    const response = await fetch('/api/game-data', {
       cache: 'no-store' // Prevent caching to always get fresh data
     });
     
