@@ -1,0 +1,50 @@
+import { Resend } from 'resend';
+import DodgersWinEmail from '@/emails/DodgersWinEmail';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function sendDodgersWinEmail(
+  to: string,
+  gameInfo: string
+) {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Dodgers Win Alert <onboarding@resend.dev>', // Using Resend's development domain
+      to: [to],
+      subject: 'Test Email from Hank',
+      react: DodgersWinEmail({ testMessage: gameInfo }),
+    });
+
+    if (error) {
+      console.error('Error sending email:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return { success: false, error: error as Error };
+  }
+}
+
+export async function sendDodgersWinEmailToAll(
+  subscribers: string[],
+  gameInfo: string
+) {
+  const results = await Promise.allSettled(
+    subscribers.map(email => sendDodgersWinEmail(email, gameInfo))
+  );
+
+  const successful = results.filter(result => 
+    result.status === 'fulfilled' && result.value.success
+  ).length;
+
+  const failed = results.length - successful;
+
+  return {
+    total: results.length,
+    successful,
+    failed,
+    results
+  };
+} 

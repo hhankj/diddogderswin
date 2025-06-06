@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "scripts/check-games.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/check-games-cron",
+      "schedule": "*/30 * * * *"
+    }
+  ]
+} 

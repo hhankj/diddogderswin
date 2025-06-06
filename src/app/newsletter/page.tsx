@@ -1,6 +1,35 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
+import { subscribeToNewsletter } from '@/app/actions';
 
 export default function Newsletter() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+    setMessage(null);
+
+    try {
+      const result = await subscribeToNewsletter(formData);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: result.message });
+        // Reset form
+        const form = document.querySelector('form') as HTMLFormElement;
+        form?.reset();
+      } else {
+        setMessage({ type: 'error', text: result.message });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Something went wrong. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white relative overflow-hidden">
       {/* Background pattern */}
@@ -57,16 +86,34 @@ export default function Newsletter() {
                 🚨 Get notified instantly!
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {/* Success/Error Messages */}
+              {message && (
+                <div className={`p-4 rounded-lg ${
+                  message.type === 'success' 
+                    ? 'bg-green-500/10 border border-green-400/20 text-green-400' 
+                    : 'bg-red-500/10 border border-red-400/20 text-red-400'
+                }`}>
+                  {message.text}
+                </div>
+              )}
+              
+              <form action={handleSubmit} className="flex flex-col sm:flex-row gap-4 items-center">
                 <input
                   type="email"
+                  name="email"
                   placeholder="Enter your email address"
-                  className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 w-full sm:flex-1 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm transition-all duration-300"
+                  required
+                  disabled={isSubmitting}
+                  className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 w-full sm:flex-1 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent backdrop-blur-sm transition-all duration-300 disabled:opacity-50"
                 />
-                <button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap transform hover:scale-105 shadow-lg hover:shadow-orange-500/25">
-                  Get Alerts
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap transform hover:scale-105 shadow-lg hover:shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? 'Subscribing...' : 'Get Alerts'}
                 </button>
-              </div>
+              </form>
               
               <div className="text-sm text-slate-400 space-y-2">
                 <p>🏠 Only when Dodgers win at home</p>
@@ -76,7 +123,6 @@ export default function Newsletter() {
             </div>
           </div>
           
-        
         </div>
       </div>
     </div>

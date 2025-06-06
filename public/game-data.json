@@ -1,5 +1,9 @@
 {
-  "didWin": false,
-  "gameInfo": "on June 4, 2025 against the New York Mets",
-  "lastUpdated": "2025-06-05T14:38:33.856Z"
+  "didWin": true,
+  "gameInfo": "Dodgers defeated Giants 7-4 at Dodger Stadium!",
+  "lastUpdated": "2025-06-06T16:09:54.268Z",
+  "lastGameId": "LAD-2024-001",
+  "lastHomeWin": "2025-06-06T16:09:54.269Z",
+  "emailSent": true,
+  "emailsSent": 0
 }

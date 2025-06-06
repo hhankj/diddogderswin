@@ -215,9 +215,11 @@ export default function Home() {
         <button className="text-white hover:text-blue-300 transition-colors duration-300 font-medium tracking-wide">
           Home
         </button>
-        <Link href="/newsletter" className="text-white hover:text-blue-300 transition-colors duration-300 font-medium tracking-wide">
-          Newsletter
-        </Link>
+        <div className="flex space-x-6">
+          <Link href="/newsletter" className="text-white hover:text-blue-300 transition-colors duration-300 font-medium tracking-wide">
+            Newsletter
+          </Link>
+        </div>
       </nav>
 
       {/* Main Content */}
