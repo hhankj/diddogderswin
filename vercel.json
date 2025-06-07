@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "scripts/check-games.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
-} 
